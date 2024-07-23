@@ -23,20 +23,40 @@ let enhance = async () => {
             document = window.document;
         }
 
-        let newDiv = document.createElement("div");
-        newDiv.innerText = "Additional Supporting Material";
-
         let listOfSM = await fetch("https://gravitate-health.lst.tfo.upm.es/epi/api/fhir/DocumentReference")
 
         for (let i = 0; i < listOfSM.length; i++) {
             let sm = listOfSM[i];
             
             if (sm.resource.subject.reference == epi.entry[0].resource.subject.reference) {
-                let newA = document.createElement("a");
-                newA.href = sm.resource.content[0].attachment.url;
-                newA.textContent = sm.resource.content[0].attachment.title;
-                newA.type = sm.resource.content[0].attachment.contentType;
-                newDiv.appendChild(newA);
+                if(epi.entry[0].resource.section[0].section[0].extension === undefined) {
+                    epi.entry[0].resource.section[0].section[0].extension = [];
+                }
+
+                let newExtension = {
+                    extension: [
+                        {
+                            url: "type",
+                            valueCodeableConcept: {
+                                coding: [
+                                    {
+                                        system: "http://terminology.hl7.org/CodeSystem/v3-DocumentSectionType",
+                                        code: "SM",
+                                        display: "Summary of Medication"
+                                    }
+                                ]
+                            
+                            }
+                        },
+                        {
+                            url: "concept",
+                            valueBase64Binary: sm.resource.content.attachment.data
+                        }
+                    ],
+                    url: "http://hl7.eu/fhir/ig/gravitate-health/StructureDefinition/AdditionalInformation"
+                }
+
+                epi.entry[0].resource.section[0].section[0].extension.push(newExtension);
             }
         }
 
