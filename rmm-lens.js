@@ -10,70 +10,119 @@ let getSpecification = () => {
 
 let enhance = async () => {
     // Proves that IPS exists
-    if (htmlData == epi.entry[0].resource.section[0].section[0].text.div) {
-        let document;
-        let response;
-    
-        if (typeof window === "undefined") {
-            let jsdom = await import("jsdom");
-            let { JSDOM } = jsdom;
-            let dom = new JSDOM(htmlData);
-            document = dom.window.document;
-        } else {
-            document = window.document;
-        }
+    let response;
 
-        let listOfSM = await fetch("https://gravitate-health.lst.tfo.upm.es/epi/api/fhir/DocumentReference")
+    let listOfSM = await fetch("https://gravitate-health.lst.tfo.upm.es/epi/api/fhir/DocumentReference")
 
-        for (let i = 0; i < listOfSM.length; i++) {
-            let sm = listOfSM[i];
-            
-            if (sm.resource.subject.reference == epi.entry[0].resource.subject.reference) {
-                if(epi.entry[0].resource.section[0].section[0].extension === undefined) {
-                    epi.entry[0].resource.section[0].section[0].extension = [];
-                }
+    for (let i = 0; i < listOfSM.length; i++) {
+        let sm = listOfSM[i];
 
-                let newExtension = {
+        if (sm.resource.subject.reference == epi.entry[0].resource.subject.reference) {
+            if (epi.entry[0].resource.section[0].section[0].extension === undefined) {
+                epi.entry[0].resource.section[0].section[0].extension = [];
+            }
+
+            let codeAndDisplay = getCodeAndDisplay(sm.resource.content.attachment);
+
+            let newExtension;
+
+            if (codeAndDisplay.code.incluides("inapp")) {
+                newExtension = {
                     extension: [
                         {
                             url: "type",
                             valueCodeableConcept: {
                                 coding: [
                                     {
-                                        system: "http://terminology.hl7.org/CodeSystem/v3-DocumentSectionType",
-                                        code: "SM",
-                                        display: "Summary of Medication"
+                                        system: "http://hl7.eu/fhir/ig/gravitate-health/CodeSystem/type-of-data-cs",
+                                        code: codeAndDisplay.code,
+                                        display: codeAndDisplay.display
                                     }
                                 ]
-                            
+
                             }
                         },
                         {
                             url: "concept",
-                            valueBase64Binary: sm.resource.content.attachment.data
+                            valueBase64Binary: sm.resource.content[0].attachment.data
                         }
                     ],
                     url: "http://hl7.eu/fhir/ig/gravitate-health/StructureDefinition/AdditionalInformation"
                 }
+            } else {
+                newExtension = {
+                    extension: [
+                        {
+                            url: "type",
+                            valueCodeableConcept: {
+                                coding: [
+                                    {
+                                        system: "http://hl7.eu/fhir/ig/gravitate-health/CodeSystem/type-of-data-cs",
+                                        code: codeAndDisplay.code,
+                                        display: codeAndDisplay.display
+                                    }
+                                ]
 
-                epi.entry[0].resource.section[0].section[0].extension.push(newExtension);
+                            }
+                        },
+                        {
+                            url: sm.resource.content[0].attachment.url
+                        }
+                    ],
+                    url: "http://hl7.eu/fhir/ig/gravitate-health/StructureDefinition/AdditionalInformation"
+                }
             }
-        }
 
-        document.body.getElementsByTagName("div")[0].appendChild(newDiv);
-
-        if (document.getElementsByTagName("head").length > 0) {
-            document.getElementsByTagName("head")[0].remove();
+            epi.entry[0].resource.section[0].section[0].extension.push(newExtension);
         }
-        if (document.getElementsByTagName("body").length > 0) {
-            response = document.getElementsByTagName("body")[0].innerHTML;
-        }
-
-        return response
     }
 
-    return htmlData;
+    return response
+
 };
+
+getCodeAndDisplay = (data) => {
+    if (data.contentType === "text/html") {
+        if (data.duration) {
+            if (data.url.contains("youtube")) {
+                return {
+                    code: "video-inapp",
+                    display: "VIDEO"
+                }
+            } else {
+                return {
+                    code: "audio-inapp",
+                    display: "AUDIO"
+                }
+            }
+
+        } else {
+            return {
+                code: "image-inapp",
+                display: "IMG"
+            }
+        }
+    } else {
+        switch (data.contentType) {
+            case "video/mp4":
+                return {
+                    code: "video",
+                    display: "VIDEO"
+                }
+            case "audio/mpeg":
+                return {
+                    code: "audio",
+                    display: "AUDIO"
+                }
+            case "image/jpg":
+                return {
+                    code: "image",
+                    display: "IMG"
+                }
+        }
+    }
+}
+
 
 return {
     enhance: enhance,
