@@ -12,10 +12,17 @@ let enhance = async () => {
     // Proves that IPS exists
     let response;
 
-    let listOfSM = await fetch("https://gravitate-health.lst.tfo.upm.es/epi/api/fhir/DocumentReference")
+    let responseFetch = await fetch("https://gravitate-health.lst.tfo.upm.es/epi/api/fhir/DocumentReference")
 
-    for (let i = 0; i < listOfSM.length; i++) {
-        let sm = listOfSM[i];
+    let listOfSM = await responseFetch.json();
+
+    console.log("ePI: ", epi)
+
+    for (let i = 0; i < listOfSM.entry.length; i++) {
+        let sm = listOfSM.entry[i];
+
+        console.log("SM Reference: ", sm.resource.subject.reference)
+        console.log("EPI Reference: ", epi.entry[0].resource.subject.reference)
 
         if (sm.resource.subject.reference == epi.entry[0].resource.subject.reference) {
             if (epi.entry[0].resource.section[0].section[0].extension === undefined) {
