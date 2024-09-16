@@ -12,7 +12,6 @@ let enhance = async () => {
 
     console.log("__________ RMM LENS EXECUTION STARTED _____________")
     // Proves that IPS exists
-    let response;
 
     let medicinalProductDefinitionId = getMedicinalProductDefinitionId(epi);
 
@@ -114,7 +113,7 @@ let enhance = async () => {
     }
 
     console.log("__________ RMM LENS EXECUTION FINISHED _____________")
-    return response
+    return htmlData;
 
 };
 
