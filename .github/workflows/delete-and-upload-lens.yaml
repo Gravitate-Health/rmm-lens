@@ -6,7 +6,7 @@ on:
     branches:
       - main
 jobs:
-  upload-lens:
+  delete-and-upload-lens:
     uses: Gravitate-Health/reusable-workflows/.github/workflows/lenses-delete-and-upload.yaml@main
     secrets:
       FHIR_SERVER_URL: ${{ secrets.FHIR_SERVER_URL }}
