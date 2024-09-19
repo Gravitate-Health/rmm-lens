@@ -94,7 +94,7 @@ let enhance = async () => {
             console.log("NEW EXTENSION: ", newExtension)
 
             // Check if extension already exists before adding it
-            let currentExtensions = epi.entry[0].resource.section[0].section[0].extension;
+            let currentExtensions = epi.entry[0].resource.section[0].section[0].extension || [];
             if (currentExtensions.length > 0) {
                 let extensionExists = false;
                 for (let j = 0; j < currentExtensions.length; j++) {
