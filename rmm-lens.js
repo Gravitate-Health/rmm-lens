@@ -20,6 +20,8 @@ let enhance = async () => {
 
     let epiReference = epi.entry[0].resource.subject[0].reference;
 
+    console.log("List of SM length: ", listOfSM.entry.length)
+
     for (let i = 0; i < listOfSM.entry.length; i++) {
         let sm = listOfSM.entry[i];
         let smReference = sm.resource.subject.reference;
@@ -95,7 +97,7 @@ let enhance = async () => {
 
             // Check if extension already exists before adding it
             let currentExtensions = epi.entry[0].resource.section[0].section[0].extension || [];
-            if (currentExtensions.length > 0) {
+            if (currentExtensions != undefined || currentExtensions.length > 0) {
                 let extensionExists = false;
                 for (let j = 0; j < currentExtensions.length; j++) {
                     if (deepEqual(currentExtensions[j], newExtension)) {
@@ -183,6 +185,9 @@ getCodeAndDisplay = (attachment) => {
 function deepEqual(object1, object2) {
     const keys1 = Object.keys(object1);
     const keys2 = Object.keys(object2);
+
+    console.log("Keys1: ", keys1)
+    console.log("Keys2: ", keys2)
   
     if (keys1.length !== keys2.length) {
       return false;
